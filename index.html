@@ -6,257 +6,68 @@
 <title>Samsung TV Plus Player</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg:      #0a0a0f;
-    --surface: #12121a;
-    --card:    #1a1a26;
-    --border:  #2a2a3a;
-    --accent:  #1428a0;
-    --accent2: #4a90e2;
-    --text:    #e8e8f0;
-    --muted:   #55556a;
+    --bg:#0a0a0f; --surface:#12121a; --card:#1a1a26; --border:#2a2a3a;
+    --accent:#1428a0; --accent2:#4a90e2; --text:#e8e8f0; --muted:#55556a;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
-
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  #status {
-    margin-left: auto;
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  #status .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background .3s;
-  }
-  #status.ok .dot  { background: #44ff88; }
-  #status.err .dot { background: #ff4444; }
-  #status.loading .dot {
-    background: var(--accent2);
-    animation: pulse 1s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-  .top-bar {
-    padding: 16px 24px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  #search {
-    flex: 1;
-    max-width: 400px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color .2s;
-  }
-  #search:focus { border-color: var(--accent2); }
-  #search::placeholder { color: var(--muted); }
-
-  #refresh-btn {
-    background: rgba(20,40,160,.15);
-    border: 1px solid rgba(74,144,226,.4);
-    color: var(--accent2);
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background .2s;
-  }
-  #refresh-btn:hover { background: rgba(74,144,226,.22); }
-  #refresh-btn:disabled { opacity: .4; cursor: default; }
-
-  #tip {
-    margin: 14px 24px 0;
-    padding: 10px 16px;
-    background: rgba(74,144,226,.07);
-    border: 1px solid rgba(74,144,226,.2);
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--accent2);
-    display: none;
-  }
-  #tip.show { display: block; }
-
-  #err-banner {
-    display: none;
-    margin: 14px 24px 0;
-    background: rgba(255,50,50,.08);
-    border: 1px solid rgba(255,50,50,.25);
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-size: 13px;
-    color: #ff8888;
-  }
-  #err-banner.show { display: block; }
-
-  .content { padding: 24px; }
-
-  .category-section { margin-bottom: 32px; }
-
-  .category-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .ch-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 8px;
-  }
-
-  .ch-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--text);
-    transition: background .15s, border-color .15s, transform .1s;
-    cursor: pointer;
-  }
-  .ch-card:hover {
-    background: #16163a;
-    border-color: var(--accent2);
-    transform: translateY(-1px);
-  }
-  .ch-card:active { transform: translateY(0); }
-
-  .ch-logo {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    border-radius: 6px;
-    background: var(--border);
-    flex-shrink: 0;
-  }
-  .ch-logo-placeholder {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    background: var(--border);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    color: var(--accent2);
-  }
-
-  .ch-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--accent2);
-    min-width: 28px;
-    text-align: center;
-  }
-  .ch-info { flex: 1; min-width: 0; }
-  .ch-name {
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .ch-badge {
-    font-size: 9px;
-    background: var(--border);
-    color: var(--muted);
-    padding: 2px 5px;
-    border-radius: 3px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
-
-  .skeleton {
-    background: linear-gradient(90deg, var(--card) 25%, #1e1e2e 50%, var(--card) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.2s infinite;
-    border-radius: 10px;
-    height: 60px;
-  }
-  @keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
-
-  #ch-count {
-    font-size: 13px;
-    color: var(--muted);
-  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+  header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  #status{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  #status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s}
+  #status.ok .dot{background:#44ff88}
+  #status.err .dot{background:#ff4444}
+  #status.loading .dot{background:var(--accent2);animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .top-bar{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  #search{flex:1;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+  #search:focus{border-color:var(--accent2)}
+  #search::placeholder{color:var(--muted)}
+  #refresh-btn{background:rgba(20,40,160,.15);border:1px solid rgba(74,144,226,.4);color:var(--accent2);border-radius:8px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:background .2s}
+  #refresh-btn:hover{background:rgba(74,144,226,.22)}
+  #refresh-btn:disabled{opacity:.4;cursor:default}
+  .cat-filter{display:flex;gap:6px;flex-wrap:wrap;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .cat-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+  .cat-btn:hover,.cat-btn.active{background:rgba(74,144,226,.15);border-color:var(--accent2);color:var(--accent2)}
+  #err-banner{display:none;margin:14px 24px 0;background:rgba(255,50,50,.08);border:1px solid rgba(255,50,50,.25);border-radius:8px;padding:12px 18px;font-size:13px;color:#ff8888}
+  #err-banner.show{display:block}
+  #tip{margin:12px 24px;padding:10px 16px;background:rgba(74,144,226,.07);border:1px solid rgba(74,144,226,.2);border-radius:8px;font-size:12px;color:var(--accent2);display:none}
+  #tip.show{display:block}
+  .content{padding:24px}
+  .category-section{margin-bottom:32px}
+  .category-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+  .ch-card{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);transition:background .15s,border-color .15s,transform .1s;cursor:pointer}
+  .ch-card:hover{background:#16163a;border-color:var(--accent2);transform:translateY(-1px)}
+  .ch-card:active{transform:translateY(0)}
+  .ch-logo{width:36px;height:36px;object-fit:contain;border-radius:6px;background:var(--border);flex-shrink:0}
+  .ch-logo-ph{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:11px;color:#fff}
+  .ch-num{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent2);min-width:26px;text-align:center}
+  .ch-info{flex:1;min-width:0}
+  .ch-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ch-badge{font-size:9px;padding:2px 5px;border-radius:3px;letter-spacing:1px;flex-shrink:0;background:rgba(74,144,226,.2);color:var(--accent2)}
+  .ch-badge.nd{background:var(--border);color:var(--muted)}
+  #ch-count{font-size:13px;color:var(--muted)}
+  .skeleton{background:linear-gradient(90deg,var(--card) 25%,#1e1e2e 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px;height:58px}
+  @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
 </style>
 </head>
 <body>
-
 <header>
   <h1>SAMSUNG TV PLUS</h1>
-  <span id="ch-count" style="color:var(--muted);font-size:13px;">Caricamento...</span>
-  <div id="status" class="loading">
-    <div class="dot"></div>
-    <span id="status-txt">Carico canali...</span>
-  </div>
+  <span id="ch-count">Caricamento...</span>
+  <div id="status" class="loading"><div class="dot"></div><span id="status-txt">Carico canali...</span></div>
 </header>
-
 <div class="top-bar">
-  <input id="search" type="text" placeholder="🔍  Cerca canale..." oninput="renderChannels(this.value)">
+  <input id="search" type="text" placeholder="🔍  Cerca canale..." oninput="renderChannels()">
   <button id="refresh-btn" onclick="loadChannels()" disabled>🔄 Ricarica</button>
 </div>
-
+<div class="cat-filter" id="cat-filter"></div>
 <div id="err-banner"></div>
-<div id="tip">✅ Canali caricati — clicca un canale per aprirlo nel player</div>
-
+<div id="tip">✅ Canali caricati — clicca per aprire lo stream nel tuo player</div>
 <div class="content" id="content">
-  <div class="ch-grid" id="skeletons">
-    <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+  <div class="ch-grid">
     <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
@@ -264,299 +75,244 @@
 </div>
 
 <script>
-// Canali Samsung TV Plus Italia con ID statici noti
-// I link vengono generati dinamicamente tramite l'API pubblica
-const SAMSUNG_API = "https://i.mjh.nz/SamsungTVPlus/app-it.json";
+// matthuisman usa jmp2.uk come proxy per i link Samsung — risolve token e CORS
+// https://github.com/matthuisman/samsung-tvplus-for-channels
+const JMP2 = "https://jmp2.uk/sam-";
+const DATA_URL = "https://i.mjh.nz/SamsungTVPlus/.channels.json.gz";
 
 const CORS_PROXIES = [
   url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://cors.isomorphic-git.org/${url}`,
   url => `https://proxy.cors.sh/${url}`,
   url => `https://thingproxy.freeboard.io/fetch/${url}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
 ];
 
-// Canali statici di fallback (con URL HLS note da fonti pubbliche)
-const FALLBACK_CHANNELS = [
-  { num:1,  name:"Inazuma Eleven",        cat:"Kids / Anime",      id:"UC8f4a8c3e6f7" },
-  { num:2,  name:"Inuyasha",              cat:"Kids / Anime",      id:"UC7d3b2a1c0e9" },
-  { num:3,  name:"Teen Vee",              cat:"Kids / Anime",      id:"UC1a2b3c4d5e6" },
-  { num:4,  name:"Yu-Gi-Oh!",             cat:"Kids / Anime",      id:"UC9e8d7c6b5a4" },
-  { num:5,  name:"Car City Adventures",   cat:"Kids / Anime",      id:"UCa1b2c3d4e5f" },
-  { num:6,  name:"Deaplaneta Kids",       cat:"Kids / Anime",      id:"UCb2c3d4e5f6a" },
-  { num:7,  name:"Ducktv",               cat:"Kids / Anime",      id:"UCc3d4e5f6a7b" },
-  { num:8,  name:"Masha E Orso",          cat:"Kids / Anime",      id:"UCd4e5f6a7b8c" },
-  { num:9,  name:"Pocoyo",               cat:"Kids / Anime",      id:"UCe5f6a7b8c9d" },
-  { num:10, name:"Sonic The Hedgehog",    cat:"Kids / Anime",      id:"UCf6a7b8c9d0e" },
-  { num:11, name:"Super! Icarly",         cat:"Kids / Anime",      id:"UCg7b8c9d0e1f" },
-  { num:12, name:"Super! Pop",            cat:"Kids / Anime",      id:"UCh8c9d0e1f2g" },
-  { num:13, name:"Super! Spongebob",      cat:"Kids / Anime",      id:"UCi9d0e1f2g3h" },
-  { num:14, name:"Supertoons Tv",         cat:"Kids / Anime",      id:"UCj0e1f2g3h4i" },
-  { num:15, name:"Teletubbies",           cat:"Kids / Anime",      id:"UCk1f2g3h4i5j" },
-  { num:16, name:"Video Game Heroes",     cat:"Kids / Anime",      id:"UCl2g3h4i5j6k" },
-  { num:17, name:"Dfb Play Tv",           cat:"Sport",             id:"UCm3h4i5j6k7l" },
-  { num:18, name:"Fifa",                  cat:"Sport",             id:"UCn4i5j6k7l8m" },
-  { num:19, name:"Inter 24/7",            cat:"Sport",             id:"UCo5j6k7l8m9n" },
-  { num:20, name:"Rbn",                   cat:"Sport",             id:"UCp6k7l8m9n0o" },
-  { num:21, name:"Solocalcio",            cat:"Sport",             id:"UCq7l8m9n0o1p" },
-  { num:22, name:"Sportitalia",           cat:"Sport",             id:"UCr8m9n0o1p2q" },
-  { num:23, name:"Top Barça",             cat:"Sport",             id:"UCs9n0o1p2q3r" },
-  { num:24, name:"Dateline 24/7",         cat:"Crime",             id:"UCt0o1p2q3r4s" },
-  { num:25, name:"Forensic Files",        cat:"Crime",             id:"UCu1p2q3r4s5t" },
-  { num:26, name:"Giallo",               cat:"Crime",             id:"UCv2q3r4s5t6u" },
-  { num:27, name:"Guardia Costiera",      cat:"Crime",             id:"UCw3r4s5t6u7v" },
-  { num:28, name:"Serie Crime",           cat:"Crime",             id:"UCx4s5t6u7v8w" },
-  { num:29, name:"Squadra Speciale Lipsia",cat:"Crime",            id:"UCy5t6u7v8w9x" },
-  { num:30, name:"Squadra Speciale Cobra 11",cat:"Crime",          id:"UCz6u7v8w9x0y" },
-  { num:31, name:"Storie Criminali",      cat:"Crime",             id:"UCA7v8w9x0y1z" },
-  { num:32, name:"True Crime",            cat:"Crime",             id:"UCB8w9x0y1z2A" },
-  { num:33, name:"A Tavola",              cat:"Food / Lifestyle",  id:"UCC9x0y1z2A3B" },
-  { num:34, name:"Brindiamo!",            cat:"Food / Lifestyle",  id:"UCD0y1z2A3B4C" },
-  { num:35, name:"Foodnetwork",           cat:"Food / Lifestyle",  id:"UCE1z2A3B4C5D" },
-  { num:36, name:"Gambero Rosso",         cat:"Food / Lifestyle",  id:"UCF2A3B4C5D6E" },
-  { num:37, name:"Hell's Kitchen",        cat:"Food / Lifestyle",  id:"UCG3B4C5D6E7F" },
-  { num:38, name:"Hgtv",                 cat:"Food / Lifestyle",  id:"UCH4C5D6E7F8G" },
-  { num:39, name:"Per Caso Tv",           cat:"Food / Lifestyle",  id:"UCI5D6E7F8G9H" },
-  { num:40, name:"Sportoutdoor.Tv",       cat:"Food / Lifestyle",  id:"UCJ6E7F8G9H0I" },
-  { num:41, name:"Viaggi & Sapori",       cat:"Food / Lifestyle",  id:"UCK7F8G9H0I1J" },
-  { num:42, name:"Bbc Earth",             cat:"Natura / Doc",      id:"UCL8G9H0I1J2K" },
-  { num:43, name:"Discovery",             cat:"Natura / Doc",      id:"UCM9H0I1J2K3L" },
-  { num:44, name:"Ii Guerra Mondiale",    cat:"Natura / Doc",      id:"UCN0I1J2K3L4M" },
-  { num:45, name:"Love The Planet",       cat:"Natura / Doc",      id:"UCO1J2K3L4M5N" },
-  { num:46, name:"Naturetime",            cat:"Natura / Doc",      id:"UCP2K3L4M5N6O" },
-  { num:47, name:"Waterbear",             cat:"Natura / Doc",      id:"UCQ3L4M5N6O7P" },
-  { num:48, name:"Wedotv Big Stories",    cat:"Natura / Doc",      id:"UCR4M5N6O7P8Q" },
-  { num:49, name:"Wildearth",             cat:"Natura / Doc",      id:"UCS5N6O7P8Q9R" },
-  { num:50, name:"Action Movie",          cat:"Cinema",            id:"UCT6O7P8Q9R0S" },
-  { num:51, name:"Adrenaline Movies",     cat:"Cinema",            id:"UCU7P8Q9R0S1T" },
-  { num:52, name:"Alberto Sordi & Co",    cat:"Cinema",            id:"UCV8Q9R0S1T2U" },
-  { num:53, name:"Alta Tensione",         cat:"Cinema",            id:"UCW9R0S1T2U3V" },
-  { num:54, name:"Bizzarro Movies",       cat:"Cinema",            id:"UCX0S1T2U3V4W" },
-  { num:55, name:"Brividy Cinema",        cat:"Cinema",            id:"UCY1T2U3V4W5X" },
-  { num:56, name:"Cg Cine Mania",         cat:"Cinema",            id:"UCZ2U3V4W5X6Y" },
-  { num:57, name:"Cg Grandi Film",        cat:"Cinema",            id:"UC0V4W5X6Y7Z" },
-  { num:58, name:"Cine Amore",            cat:"Cinema",            id:"UC1W5X6Y7Z8a" },
-  { num:59, name:"Cine Paura",            cat:"Cinema",            id:"UC2X6Y7Z8a9b" },
-  { num:60, name:"Cine Thriller",         cat:"Cinema",            id:"UC3Y7Z8a9b0c" },
-  { num:61, name:"Cinema Italiano",       cat:"Cinema",            id:"UC4Z8a9b0c1d" },
-  { num:62, name:"Cinemadame",            cat:"Cinema",            id:"UC5a9b0c1d2e" },
-  { num:63, name:"Cinemalizia",           cat:"Cinema",            id:"UC6b0c1d2e3f" },
-  { num:64, name:"Cinewestern",           cat:"Cinema",            id:"UC7c1d2e3f4g" },
-  { num:65, name:"Commedia - Rakuten",    cat:"Cinema",            id:"UC8d2e3f4g5h" },
-  { num:66, name:"Crime Time",            cat:"Cinema",            id:"UC9e3f4g5h6i" },
-  { num:67, name:"Dramma - Rakuten",      cat:"Cinema",            id:"UC0f4g5h6i7j" },
-  { num:68, name:"Duri A Morire",         cat:"Cinema",            id:"UC1g5h6i7j8k" },
-  { num:69, name:"Family - Rakuten",      cat:"Cinema",            id:"UC2h6i7j8k9l" },
-  { num:70, name:"Fantascienza - Rakuten",cat:"Cinema",            id:"UC3i7j8k9l0m" },
-  { num:71, name:"Film Al Femminile",     cat:"Cinema",            id:"UC4j8k9l0m1n" },
-  { num:72, name:"Film Asiatici - Rakuten",cat:"Cinema",           id:"UC5k9l0m1n2o" },
-  { num:73, name:"Film D'azione - Rakuten",cat:"Cinema",           id:"UC6l0m1n2o3p" },
-  { num:74, name:"Film Top - Rakuten",    cat:"Cinema",            id:"UC7m1n2o3p4q" },
-  { num:75, name:"Gli Immortali",         cat:"Cinema",            id:"UC8n2o3p4q5r" },
-  { num:76, name:"Grandi Nomi",           cat:"Cinema",            id:"UC9o3p4q5r6s" },
-  { num:77, name:"Grjngo - Film Western", cat:"Cinema",            id:"UC0p4q5r6s7t" },
-  { num:78, name:"Pluto Tv Film",         cat:"Cinema",            id:"UC1q5r6s7t8u" },
-  { num:79, name:"Pluto Tv Film Azione",  cat:"Cinema",            id:"UC2r6s7t8u9v" },
-  { num:80, name:"Pluto Tv Film Commedia",cat:"Cinema",            id:"UC3s7t8u9v0w" },
-  { num:81, name:"Pluto Tv Film Romantico",cat:"Cinema",           id:"UC4t8u9v0w1x" },
-  { num:82, name:"Romance - Rakuten",     cat:"Cinema",            id:"UC5u9v0w1x2y" },
-  { num:83, name:"Romantica",             cat:"Cinema",            id:"UC6v0w1x2y3z" },
-  { num:84, name:"Smile",                cat:"Cinema",            id:"UC7w1x2y3z4A" },
-  { num:85, name:"Supercinema",           cat:"Cinema",            id:"UC8x2y3z4A5B" },
-  { num:86, name:"Trailers",              cat:"Cinema",            id:"UC9y3z4A5B6C" },
-  { num:87, name:"Velvet",               cat:"Cinema",            id:"UC0z4A5B6C7D" },
-  { num:88, name:"Western Time",          cat:"Cinema",            id:"UC1A5B6C7D8E" },
-  { num:89, name:"5-Minuti Creativi",     cat:"Lifestyle",         id:"UC2B6C7D8E9F" },
-  { num:90, name:"Beauty Channel",        cat:"Lifestyle",         id:"UC3C7D8E9F0G" },
-  { num:91, name:"Catfish",              cat:"Lifestyle",         id:"UC4D8E9F0G1H" },
-  { num:92, name:"Class Tv Moda",         cat:"Lifestyle",         id:"UC5E9F0G1H2I" },
-  { num:93, name:"Dmax",                 cat:"Lifestyle",         id:"UC6F0G1H2I3J" },
-  { num:94, name:"Failarmy",             cat:"Lifestyle",         id:"UC7G1H2I3J4K" },
-  { num:95, name:"Fireplace Vibes",       cat:"Lifestyle",         id:"UC8H2I3J4K5L" },
-  { num:96, name:"Just For Laughs",       cat:"Lifestyle",         id:"UC9I3J4K5L6M" },
-  { num:97, name:"Mudù - Risate Al Sud",  cat:"Lifestyle",         id:"UC0J4K5L6M7N" },
-  { num:98, name:"Nove",                 cat:"Lifestyle",         id:"UC1K5L6M7N8O" },
-  { num:99, name:"People Are Awesome",    cat:"Lifestyle",         id:"UC2L6M7N8O9P" },
-  { num:100,name:"Pluto Tv Real Life",    cat:"Lifestyle",         id:"UC3M7N8O9P0Q" },
-  { num:101,name:"Real Time",             cat:"Lifestyle",         id:"UC4N8O9P0Q1R" },
-  { num:102,name:"The Pet Collective",    cat:"Lifestyle",         id:"UC5O9P0Q1R2S" },
-  { num:103,name:"70-80.It",              cat:"Musica",            id:"UC6P0Q1R2S3T" },
-  { num:104,name:"Cool Summer",           cat:"Musica",            id:"UC7Q1R2S3T4U" },
-  { num:105,name:"Deluxe Lounge",         cat:"Musica",            id:"UC8R2S3T4U5V" },
-  { num:106,name:"Hip Hop Tv",            cat:"Musica",            id:"UC9S3T4U5V6W" },
-  { num:107,name:"K-Pop By Cj Enm",       cat:"Musica",            id:"UC0T4U5V6W7X" },
-  { num:108,name:"New Kpop",              cat:"Musica",            id:"UC1U5V6W7X8Y" },
-  { num:109,name:"Radio Italia Live",     cat:"Musica",            id:"UC2V6W7X8Y9Z" },
-  { num:110,name:"Rock Tv",              cat:"Musica",            id:"UC3W7X8Y9Z0a" },
-  { num:111,name:"Trace Latina",          cat:"Musica",            id:"UC4X8Y9Z0a1b" },
-  { num:112,name:"Trace Urban",           cat:"Musica",            id:"UC5Y9Z0a1b2c" },
-  { num:113,name:"Vevo '70S & '80S",      cat:"Musica",            id:"UC6Z0a1b2c3d" },
-  { num:114,name:"Vevo '90S & '00S",      cat:"Musica",            id:"UC7a1b2c3d4e" },
-  { num:115,name:"Vevo Pop",              cat:"Musica",            id:"UC8b2c3d4e5f" },
-  { num:116,name:"3Bmeteo",              cat:"News",              id:"UC9c3d4e5f6g" },
-  { num:117,name:"Al Jazeera",            cat:"News",              id:"UC0d4e5f6g7h" },
-  { num:118,name:"Bloomberg Tv",          cat:"News",              id:"UC1e5f6g7h8i" },
-  { num:119,name:"Class Cnbc",            cat:"News",              id:"UC2f6g7h8i9j" },
-  { num:120,name:"Cnbc",                 cat:"News",              id:"UC3g7h8i9j0k" },
-  { num:121,name:"Cnn Headlines",         cat:"News",              id:"UC4h8i9j0k1l" },
-  { num:122,name:"Euronews In Italiano",  cat:"News",              id:"UC5i9j0k1l2m" },
-  { num:123,name:"France 24 Fast",        cat:"News",              id:"UC6j0k1l2m3n" },
-  { num:124,name:"Giornale Radio",        cat:"News",              id:"UC7k1l2m3n4o" },
-  { num:125,name:"Il Sole 24 Ore Tv",     cat:"News",              id:"UC8l2m3n4o5p" },
-  { num:126,name:"La 7",                 cat:"News",              id:"UC9m3n4o5p6q" },
-  { num:127,name:"Nbc News Now",          cat:"News",              id:"UC0n4o5p6q7r" },
-  { num:128,name:"Rai News 24",           cat:"News",              id:"UC1o5p6q7r8s" },
-  { num:129,name:"Sky News International",cat:"News",              id:"UC2p6q7r8s9t" },
-  { num:130,name:"Tv5 Monde Info",        cat:"News",              id:"UC3q7r8s9t0u" },
-  { num:131,name:"Urania News",           cat:"News",              id:"UC4r8s9t0u1v" },
-  { num:132,name:"Anche I Ricchi Piangono",cat:"Serie / Fiction",  id:"UC5s9t0u1v2w" },
-  { num:133,name:"Andromeda",             cat:"Serie / Fiction",   id:"UC6t0u1v2w3x" },
-  { num:134,name:"Autostop Per Il Cielo", cat:"Serie / Fiction",   id:"UC7u1v2w3x4y" },
-  { num:135,name:"Bbc Series",            cat:"Serie / Fiction",   id:"UC8v2w3x4y5z" },
-  { num:136,name:"Elisa Di Rivombrosa",   cat:"Serie / Fiction",   id:"UC9w3x4y5z6A" },
-  { num:137,name:"H2o & Friends",         cat:"Serie / Fiction",   id:"UC0x4y5z6A7B" },
-  { num:138,name:"K-Drama",              cat:"Serie / Fiction",   id:"UC1y5z6A7B8C" },
-  { num:139,name:"Martial Universe",      cat:"Serie / Fiction",   id:"UC2z6A7B8C9D" },
-  { num:140,name:"Mr Bean Animated",      cat:"Serie / Fiction",   id:"UC3A7B8C9D0E" },
-  { num:141,name:"Mutant X",             cat:"Serie / Fiction",   id:"UC4B8C9D0E1F" },
-  { num:142,name:"Piel Salvaje",          cat:"Serie / Fiction",   id:"UC5C9D0E1F2G" },
-  { num:143,name:"Pluto Tv Serie",        cat:"Serie / Fiction",   id:"UC6D0E1F2G3H" },
-  { num:144,name:"Relic Hunter",          cat:"Serie / Fiction",   id:"UC7E1F2G3H4I" },
-  { num:145,name:"Soap Latino",           cat:"Serie / Fiction",   id:"UC8F2G3H4I5J" },
-  { num:146,name:"Soap Turco",            cat:"Serie / Fiction",   id:"UC9G3H4I5J6K" },
-  { num:147,name:"Un Medico In Famiglia", cat:"Serie / Fiction",   id:"UC0H4I5J6K7L" },
-  { num:148,name:"Adventure Sports",      cat:"Sport",             id:"UC1I5J6K7L8M" },
-  { num:149,name:"Automoto",              cat:"Sport",             id:"UC2J6K7L8M9N" },
-  { num:150,name:"Golf Television",       cat:"Sport",             id:"UC3K7L8M9N0O" },
-  { num:151,name:"Italian Fishing Tv",    cat:"Sport",             id:"UC4L8M9N0O1P" },
-  { num:152,name:"Motor1",               cat:"Sport",             id:"UC5M9N0O1P2Q" },
-  { num:153,name:"Motoretrò",             cat:"Sport",             id:"UC6N0O1P2Q3R" },
-  { num:154,name:"Move - Sportivi",       cat:"Sport",             id:"UC7O1P2Q3R4S" },
-  { num:155,name:"Rally.Tv Fast",         cat:"Sport",             id:"UC8P2Q3R4S5T" },
-  { num:156,name:"Red Bull Tv",           cat:"Sport",             id:"UC9Q3R4S5T6U" },
-  { num:157,name:"Salto Ostacoli",        cat:"Sport",             id:"UC0R4S5T6U7V" },
-  { num:158,name:"Supertennis",           cat:"Sport",             id:"UC1S5T6U7V8W" },
-  { num:159,name:"Tennis",               cat:"Sport",             id:"UC2T6U7V8W9X" },
-  { num:160,name:"The Boat Show",         cat:"Sport",             id:"UC3U7V8W9X0Y" },
-  { num:161,name:"Top Gear",             cat:"Sport",             id:"UC4V8W9X0Y1Z" },
-  { num:162,name:"Turbo",                cat:"Sport",             id:"UC5W9X0Y1Z2a" },
-  { num:163,name:"World Poker Tour",      cat:"Sport",             id:"UC6X0Y1Z2a3b" },
-];
+// Mapping nomi -> categoria IT
+const CAT_MAP = {
+  "Inazuma Eleven":"🧒 Kids / Anime","Inuyasha":"🧒 Kids / Anime","Teen Vee":"🧒 Kids / Anime",
+  "Yu-Gi-Oh!":"🧒 Kids / Anime","Car City Adventures":"🧒 Kids / Anime","Deaplaneta Kids":"🧒 Kids / Anime",
+  "Ducktv":"🧒 Kids / Anime","Masha E Orso":"🧒 Kids / Anime","Pocoyo":"🧒 Kids / Anime",
+  "Sonic The Hedgehog":"🧒 Kids / Anime","Super! Icarly":"🧒 Kids / Anime","Super! Pop":"🧒 Kids / Anime",
+  "Super! Spongebob":"🧒 Kids / Anime","Supertoons Tv":"🧒 Kids / Anime","Teletubbies":"🧒 Kids / Anime",
+  "Video Game Heroes":"🧒 Kids / Anime",
+  "Dfb Play Tv":"⚽ Sport","Fifa":"⚽ Sport","Inter 24/7":"⚽ Sport","Rbn":"⚽ Sport",
+  "Solocalcio":"⚽ Sport","Sportitalia":"⚽ Sport","Top Barça":"⚽ Sport","Adventure Sports":"⚽ Sport",
+  "Automoto":"⚽ Sport","Golf Television":"⚽ Sport","Italian Fishing Tv":"⚽ Sport","Motor1":"⚽ Sport",
+  "Motoretrò":"⚽ Sport","Move - Sportivi":"⚽ Sport","Rally.Tv Fast":"⚽ Sport","Red Bull Tv":"⚽ Sport",
+  "Salto Ostacoli":"⚽ Sport","Supertennis":"⚽ Sport","Tennis":"⚽ Sport","The Boat Show":"⚽ Sport",
+  "Top Gear":"⚽ Sport","Turbo":"⚽ Sport","World Poker Tour":"⚽ Sport",
+  "Dateline 24/7":"🔪 Crime","Forensic Files":"🔪 Crime","Giallo":"🔪 Crime","Guardia Costiera":"🔪 Crime",
+  "Serie Crime":"🔪 Crime","Squadra Speciale Lipsia":"🔪 Crime","Squadra Speciale Cobra 11":"🔪 Crime",
+  "Storie Criminali":"🔪 Crime","True Crime":"🔪 Crime",
+  "A Tavola":"🍕 Food & Lifestyle","Brindiamo!":"🍕 Food & Lifestyle","Foodnetwork":"🍕 Food & Lifestyle",
+  "Gambero Rosso":"🍕 Food & Lifestyle","Hell's Kitchen":"🍕 Food & Lifestyle","Hgtv":"🍕 Food & Lifestyle",
+  "Per Caso Tv":"🍕 Food & Lifestyle","Sportoutdoor.Tv":"🍕 Food & Lifestyle","Viaggi & Sapori":"🍕 Food & Lifestyle",
+  "5-Minuti Creativi":"🍕 Food & Lifestyle","Beauty Channel":"🍕 Food & Lifestyle","Catfish":"🍕 Food & Lifestyle",
+  "Class Tv Moda":"🍕 Food & Lifestyle","Dmax":"🍕 Food & Lifestyle","Failarmy":"🍕 Food & Lifestyle",
+  "Fireplace Vibes":"🍕 Food & Lifestyle","Just For Laughs":"🍕 Food & Lifestyle","Mudù - Risate Al Sud":"🍕 Food & Lifestyle",
+  "Nove":"🍕 Food & Lifestyle","People Are Awesome":"🍕 Food & Lifestyle","Pluto Tv Real Life":"🍕 Food & Lifestyle",
+  "Real Time":"🍕 Food & Lifestyle","The Pet Collective":"🍕 Food & Lifestyle",
+  "Bbc Earth":"🌿 Natura & Doc","Discovery":"🌿 Natura & Doc","Ii Guerra Mondiale":"🌿 Natura & Doc",
+  "Love The Planet":"🌿 Natura & Doc","Naturetime":"🌿 Natura & Doc","Waterbear":"🌿 Natura & Doc",
+  "Wedotv Big Stories":"🌿 Natura & Doc","Wildearth":"🌿 Natura & Doc",
+  "70-80.It":"🎵 Musica","Cool Summer":"🎵 Musica","Deluxe Lounge":"🎵 Musica","Hip Hop Tv":"🎵 Musica",
+  "K-Pop By Cj Enm":"🎵 Musica","New Kpop":"🎵 Musica","Radio Italia Live":"🎵 Musica","Rock Tv":"🎵 Musica",
+  "Trace Latina":"🎵 Musica","Trace Urban":"🎵 Musica","Vevo '70S & '80S":"🎵 Musica",
+  "Vevo '90S & '00S":"🎵 Musica","Vevo Pop":"🎵 Musica",
+  "3Bmeteo":"📰 News","Al Jazeera":"📰 News","Bloomberg Tv":"📰 News","Class Cnbc":"📰 News",
+  "Cnbc":"📰 News","Cnn Headlines":"📰 News","Euronews In Italiano":"📰 News","France 24 Fast":"📰 News",
+  "Giornale Radio":"📰 News","Il Sole 24 Ore Tv":"📰 News","La 7":"📰 News","Nbc News Now":"📰 News",
+  "Rai News 24":"📰 News","Sky News International":"📰 News","Tv5 Monde Info":"📰 News","Urania News":"📰 News",
+  "Anche I Ricchi Piangono":"📺 Serie & Fiction","Andromeda":"📺 Serie & Fiction","Autostop Per Il Cielo":"📺 Serie & Fiction",
+  "Bbc Series":"📺 Serie & Fiction","Elisa Di Rivombrosa":"📺 Serie & Fiction","H2o & Friends":"📺 Serie & Fiction",
+  "K-Drama":"📺 Serie & Fiction","Martial Universe":"📺 Serie & Fiction","Mr Bean Animated":"📺 Serie & Fiction",
+  "Mutant X":"📺 Serie & Fiction","Piel Salvaje":"📺 Serie & Fiction","Pluto Tv Serie":"📺 Serie & Fiction",
+  "Relic Hunter":"📺 Serie & Fiction","Soap Latino":"📺 Serie & Fiction","Soap Turco":"📺 Serie & Fiction",
+  "Un Medico In Famiglia":"📺 Serie & Fiction",
+};
+
+// Ordine numerico IT
+const NUM_MAP = {
+  "Inazuma Eleven":1,"Inuyasha":2,"Teen Vee":3,"Yu-Gi-Oh!":4,"Car City Adventures":5,
+  "Deaplaneta Kids":6,"Ducktv":7,"Masha E Orso":8,"Pocoyo":9,"Sonic The Hedgehog":10,
+  "Super! Icarly":11,"Super! Pop":12,"Super! Spongebob":13,"Supertoons Tv":14,"Teletubbies":15,
+  "Video Game Heroes":16,"Dfb Play Tv":17,"Fifa":18,"Inter 24/7":19,"Rbn":20,
+  "Solocalcio":21,"Sportitalia":22,"Top Barça":23,"Dateline 24/7":24,"Forensic Files":25,
+  "Giallo":26,"Guardia Costiera":27,"Serie Crime":28,"Squadra Speciale Lipsia":29,"Squadra Speciale Cobra 11":30,
+  "Storie Criminali":31,"True Crime":32,"A Tavola":33,"Brindiamo!":34,"Foodnetwork":35,
+  "Gambero Rosso":36,"Hell's Kitchen":37,"Hgtv":38,"Per Caso Tv":39,"Sportoutdoor.Tv":40,
+  "Viaggi & Sapori":41,"Bbc Earth":42,"Discovery":43,"Ii Guerra Mondiale":44,"Love The Planet":45,
+  "Naturetime":46,"Waterbear":47,"Wedotv Big Stories":48,"Wildearth":49,"Action Movie":50,
+  "Adrenaline Movies":51,"Alberto Sordi & Co":52,"Alta Tensione":53,"Bizzarro Movies":54,
+  "Brividy Cinema":55,"Cg Cine Mania":56,"Cg Grandi Film":57,"Cine Amore":58,"Cine Paura":59,
+  "Cine Thriller":60,"Cinema Italiano":61,"Cinemadame":62,"Cinemalizia":63,"Cinewestern":64,
+  "Commedia - Rakuten":65,"Crime Time":66,"Dramma - Rakuten":67,"Duri A Morire":68,
+  "Family - Rakuten":69,"Fantascienza - Rakuten":70,"Film Al Femminile":71,"Film Asiatici - Rakuten":72,
+  "Film D'azione - Rakuten":73,"Film Top - Rakuten":74,"Gli Immortali":75,"Grandi Nomi":76,
+  "Grjngo - Film Western":77,"Pluto Tv Film":78,"Pluto Tv Film Azione":79,"Pluto Tv Film Commedia":80,
+  "Pluto Tv Film Romantico":81,"Romance - Rakuten":82,"Romantica":83,"Smile":84,"Supercinema":85,
+  "Trailers":86,"Velvet":87,"Western Time":88,"5-Minuti Creativi":89,"Beauty Channel":90,
+  "Catfish":91,"Class Tv Moda":92,"Dmax":93,"Failarmy":94,"Fireplace Vibes":95,
+  "Just For Laughs":96,"Mudù - Risate Al Sud":97,"Nove":98,"People Are Awesome":99,
+  "Pluto Tv Real Life":100,"Real Time":101,"The Pet Collective":102,"70-80.It":103,
+  "Cool Summer":104,"Deluxe Lounge":105,"Hip Hop Tv":106,"K-Pop By Cj Enm":107,"New Kpop":108,
+  "Radio Italia Live":109,"Rock Tv":110,"Trace Latina":111,"Trace Urban":112,
+  "Vevo '70S & '80S":113,"Vevo '90S & '00S":114,"Vevo Pop":115,"3Bmeteo":116,
+  "Al Jazeera":117,"Bloomberg Tv":118,"Class Cnbc":119,"Cnbc":120,"Cnn Headlines":121,
+  "Euronews In Italiano":122,"France 24 Fast":123,"Giornale Radio":124,"Il Sole 24 Ore Tv":125,
+  "La 7":126,"Nbc News Now":127,"Rai News 24":128,"Sky News International":129,
+  "Tv5 Monde Info":130,"Urania News":131,"Anche I Ricchi Piangono":132,"Andromeda":133,
+  "Autostop Per Il Cielo":134,"Bbc Series":135,"Elisa Di Rivombrosa":136,"H2o & Friends":137,
+  "K-Drama":138,"Martial Universe":139,"Mr Bean Animated":140,"Mutant X":141,"Piel Salvaje":142,
+  "Pluto Tv Serie":143,"Relic Hunter":144,"Soap Latino":145,"Soap Turco":146,
+  "Un Medico In Famiglia":147,"Adventure Sports":148,"Automoto":149,"Golf Television":150,
+  "Italian Fishing Tv":151,"Motor1":152,"Motoretrò":153,"Move - Sportivi":154,
+  "Rally.Tv Fast":155,"Red Bull Tv":156,"Salto Ostacoli":157,"Supertennis":158,
+  "Tennis":159,"The Boat Show":160,"Top Gear":161,"Turbo":162,"World Poker Tour":163,
+};
 
 let channelsData = [];
-
-function fetchWithTimeout(url, ms = 8000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
-}
+let activeCat = "Tutti";
 
 function setStatus(state, txt) {
   const el = document.getElementById("status");
   el.className = state;
   document.getElementById("status-txt").textContent = txt;
 }
-
 function showErr(msg) {
   const b = document.getElementById("err-banner");
-  if (msg) { b.textContent = "⚠️ " + msg; b.classList.add("show"); }
-  else { b.classList.remove("show"); }
+  if (msg) { b.textContent = "❌ " + msg; b.classList.add("show"); }
+  else b.classList.remove("show");
 }
 
-async function fetchSamsungAPI() {
-  // Prima tenta diretto
-  try {
-    const res = await fetchWithTimeout(SAMSUNG_API, 5000);
-    if (res.ok) return await res.json();
-  } catch(_) {}
-
-  // Poi proxy in parallelo
-  return await Promise.any(
-    CORS_PROXIES.map(proxy => proxy(SAMSUNG_API)).map(async url => {
-      const res = await fetchWithTimeout(url, 10000);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (!data) throw new Error("Dati vuoti");
-      return data;
-    })
-  );
+function fetchWithTimeout(url, ms=8000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, {signal: ctrl.signal}).finally(() => clearTimeout(t));
 }
 
 async function loadChannels() {
-  const btn = document.getElementById("refresh-btn");
-  btn.disabled = true;
+  document.getElementById("refresh-btn").disabled = true;
   setStatus("loading", "Carico canali...");
   showErr(null);
+  document.getElementById("tip").classList.remove("show");
 
   try {
-    const data = await fetchSamsungAPI();
-    // L'API restituisce { channels: { id: { name, url, logo, ... } } }
-    const raw = data.channels || data;
-    channelsData = [];
+    // Prova diretto poi proxy
+    let data = null;
+    try {
+      const res = await fetchWithTimeout(DATA_URL, 5000);
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        const ds = new DecompressionStream('gzip');
+        const writer = ds.writable.getWriter();
+        writer.write(new Uint8Array(buf));
+        writer.close();
+        const reader = ds.readable.getReader();
+        const chunks = [];
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) break;
+          chunks.push(value);
+        }
+        const text = new TextDecoder().decode(
+          chunks.reduce((a,b) => { const c=new Uint8Array(a.length+b.length); c.set(a); c.set(b,a.length); return c; }, new Uint8Array(0))
+        );
+        data = JSON.parse(text);
+      }
+    } catch(_) {}
 
-    // Mappa i canali dell'API con i nostri canali fallback per arricchirli
-    const fallbackMap = {};
-    FALLBACK_CHANNELS.forEach(c => {
-      fallbackMap[c.name.toLowerCase().replace(/[^a-z0-9]/g,'')] = c;
-    });
-
-    let num = 1;
-    for (const [id, ch] of Object.entries(raw)) {
-      const normName = (ch.name || '').toLowerCase().replace(/[^a-z0-9]/g,'');
-      const fb = fallbackMap[normName];
-      channelsData.push({
-        num: fb ? fb.num : num++,
-        name: ch.name || id,
-        url: ch.url || ch.stream_url || ch.streamUrl || '',
-        logo: ch.logo || ch.thumbnail || '',
-        cat: fb ? fb.cat : (ch.group || ch.category || 'Vari'),
-        id: id
-      });
+    // Se il gz non funziona, prova la versione non compressa via proxy
+    if (!data) {
+      const plainUrl = "https://i.mjh.nz/SamsungTVPlus/app-it.json";
+      data = await Promise.any(
+        CORS_PROXIES.map(proxy => proxy(plainUrl)).map(async url => {
+          const res = await fetchWithTimeout(url, 10000);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const d = await res.json();
+          if (!d) throw new Error("vuoto");
+          return d;
+        })
+      );
     }
 
-    // Ordina per numero
+    // Parsing dati
+    // Struttura .channels.json.gz: { channels: { "IT": { id: { name, slug, logo, ... } } } }
+    // Struttura app-it.json: { channels: { id: { name, url, logo } } }
+    let rawChannels = {};
+    if (data.channels) {
+      if (data.channels.it || data.channels.IT) {
+        rawChannels = data.channels.it || data.channels.IT;
+      } else {
+        // Controlla se sono già canali diretti
+        const firstVal = Object.values(data.channels)[0];
+        if (firstVal && (firstVal.name || firstVal.slug)) {
+          rawChannels = data.channels;
+        }
+      }
+    }
+    if (Object.keys(rawChannels).length === 0) rawChannels = data;
+
+    channelsData = [];
+    for (const [id, ch] of Object.entries(rawChannels)) {
+      const name = ch.name || id;
+      // jmp2.uk/sam-{slug} è il link che usa matthuisman
+      const slug = ch.slug || id;
+      const url = ch.url || ch.stream_url || `${JMP2}${slug}`;
+      const logo = ch.logo || ch.thumbnail || "";
+      // Cerca categoria e numero dalla nostra mappa
+      let cat = "🎬 Cinema"; // default
+      let num = 200;
+      for (const [n, c] of Object.entries(CAT_MAP)) {
+        if (name.toLowerCase().includes(n.toLowerCase()) || n.toLowerCase().includes(name.toLowerCase())) {
+          cat = c; break;
+        }
+      }
+      for (const [n, nu] of Object.entries(NUM_MAP)) {
+        if (name.toLowerCase().includes(n.toLowerCase()) || n.toLowerCase().includes(name.toLowerCase())) {
+          num = nu; break;
+        }
+      }
+      channelsData.push({ id, name, url, logo, cat, num, slug });
+    }
     channelsData.sort((a,b) => a.num - b.num);
 
     document.getElementById("ch-count").textContent = `${channelsData.length} canali IT`;
-    setStatus("ok", "Canali caricati");
+    setStatus("ok", "Canali caricati ✓");
     document.getElementById("tip").classList.add("show");
-    renderChannels(document.getElementById("search").value);
+    renderCatFilter();
+    renderChannels();
 
   } catch(e) {
-    // Fallback: usa lista statica senza URL
-    setStatus("err", "API non raggiungibile");
-    showErr("Impossibile caricare i link live dall'API Samsung. Mostro la lista canali senza URL diretti. Premi 🔄 Ricarica per riprovare.");
-    channelsData = FALLBACK_CHANNELS.map(c => ({ ...c, url: '', logo: '' }));
-    document.getElementById("ch-count").textContent = `${channelsData.length} canali IT`;
-    renderChannels(document.getElementById("search").value);
+    setStatus("err", "Errore caricamento");
+    showErr("Impossibile caricare i dati dall'API Samsung. Verifica la connessione e riprova. (" + e.message + ")");
+    document.getElementById("ch-count").textContent = "— canali";
+    document.getElementById("content").innerHTML = "";
   }
 
-  btn.disabled = false;
+  document.getElementById("refresh-btn").disabled = false;
 }
 
-function getCatIcon(cat) {
-  const icons = {
-    "Kids / Anime": "🧒",
-    "Sport": "⚽",
-    "Crime": "🔪",
-    "Food / Lifestyle": "🍕",
-    "Natura / Doc": "🌿",
-    "Cinema": "🎬",
-    "Musica": "🎵",
-    "News": "📰",
-    "Serie / Fiction": "📺",
-    "Lifestyle": "✨",
-    "Vari": "📡",
-  };
-  return icons[cat] || "📡";
+function renderCatFilter() {
+  const el = document.getElementById("cat-filter");
+  el.innerHTML = "";
+  const cats = ["Tutti", ...new Set(channelsData.map(c => c.cat))];
+  cats.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (cat === activeCat ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => { activeCat = cat; renderCatFilter(); renderChannels(); };
+    el.appendChild(btn);
+  });
 }
 
-function renderChannels(query) {
-  const q = (query || "").toLowerCase();
-  const filtered = q
-    ? channelsData.filter(c => c.name.toLowerCase().includes(q) || String(c.num).includes(q))
-    : channelsData;
+function renderChannels() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const filtered = channelsData.filter(c => {
+    const ms = !q || c.name.toLowerCase().includes(q) || String(c.num).includes(q);
+    const mc = activeCat === "Tutti" || c.cat === activeCat;
+    return ms && mc;
+  });
 
   const groups = {};
   for (const ch of filtered) {
@@ -568,12 +324,13 @@ function renderChannels(query) {
   content.innerHTML = "";
 
   if (filtered.length === 0) {
-    content.innerHTML = `<div style="color:var(--muted);padding:40px;text-align:center">Nessun canale trovato</div>`;
+    content.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center">Nessun canale trovato</div>';
     return;
   }
 
-  // Ordine categorie
-  const catOrder = ["Kids / Anime","Sport","Crime","Food / Lifestyle","Natura / Doc","Cinema","Lifestyle","Musica","News","Serie / Fiction","Vari"];
+  document.getElementById("ch-count").textContent = `${filtered.length} / ${channelsData.length} canali IT`;
+
+  const catOrder = ["🧒 Kids / Anime","⚽ Sport","🔪 Crime","🍕 Food & Lifestyle","🌿 Natura & Doc","🎬 Cinema","🎵 Musica","📰 News","📺 Serie & Fiction"];
   const sortedCats = [...new Set([...catOrder, ...Object.keys(groups)])].filter(c => groups[c]);
 
   for (const cat of sortedCats) {
@@ -583,7 +340,7 @@ function renderChannels(query) {
 
     const title = document.createElement("div");
     title.className = "category-title";
-    title.textContent = `${getCatIcon(cat)}  ${cat}`;
+    title.textContent = cat;
     sec.appendChild(title);
 
     const grid = document.createElement("div");
@@ -593,35 +350,25 @@ function renderChannels(query) {
       const a = document.createElement("a");
       a.className = "ch-card";
       a.href = "#";
-
-      let logoHtml = '';
-      if (ch.logo) {
-        logoHtml = `<img class="ch-logo" src="${ch.logo}" alt="" onerror="this.style.display='none'">`;
-      } else {
-        const initials = ch.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
-        logoHtml = `<div class="ch-logo-placeholder">${initials}</div>`;
-      }
-
+      const initials = ch.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      const hasUrl = !!ch.url;
       a.innerHTML = `
-        ${logoHtml}
+        ${ch.logo
+          ? `<img class="ch-logo" src="${ch.logo}" alt="" onerror="this.outerHTML='<div class=ch-logo-ph>${initials}</div>'">`
+          : `<div class="ch-logo-ph">${initials}</div>`}
         <span class="ch-info">
-          <span class="ch-num">${ch.num}</span>
+          <span class="ch-num">${ch.num < 200 ? ch.num : '—'}</span>
           <span class="ch-name">${ch.name}</span>
         </span>
-        <span class="ch-badge">${ch.url ? 'HLS' : 'N/D'}</span>`;
+        <span class="ch-badge${hasUrl ? '' : ' nd'}">${hasUrl ? 'HLS' : 'N/D'}</span>`;
 
-      a.addEventListener("click", function(e) {
+      a.addEventListener("click", e => {
         e.preventDefault();
-        if (ch.url) {
-          window.open(ch.url, "_blank", "noopener");
-        } else {
-          alert(`⚠️ Link non disponibile per "${ch.name}".\nPremi 🔄 Ricarica per tentare di ottenere i link live.`);
-        }
+        if (ch.url) window.open(ch.url, "_blank", "noopener");
+        else alert(`⚠️ Link non disponibile per "${ch.name}". Ricarica per riprovare.`);
       });
-
       grid.appendChild(a);
     }
-
     sec.appendChild(grid);
     content.appendChild(sec);
   }
@@ -629,11 +376,8 @@ function renderChannels(query) {
 
 // Avvio
 loadChannels();
-
-// Rinnovo automatico ogni 30 minuti (i link Samsung scadono)
-setInterval(() => {
-  loadChannels();
-}, 30 * 60 * 1000);
+// Rinnovo ogni 30 min
+setInterval(loadChannels, 30 * 60 * 1000);
 </script>
 </body>
 </html>
