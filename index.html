@@ -47,7 +47,6 @@
   .ch-info{flex:1;min-width:0}
   .ch-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ch-badge{font-size:9px;padding:2px 5px;border-radius:3px;letter-spacing:1px;flex-shrink:0;background:rgba(74,144,226,.2);color:var(--accent2)}
-  .ch-badge.nd{background:var(--border);color:var(--muted)}
   #ch-count{font-size:13px;color:var(--muted)}
   .skeleton{background:linear-gradient(90deg,var(--card) 25%,#1e1e2e 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px;height:58px}
   @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
@@ -57,7 +56,7 @@
 <header>
   <h1>SAMSUNG TV PLUS</h1>
   <span id="ch-count">Caricamento...</span>
-  <div id="status" class="loading"><div class="dot"></div><span id="status-txt">Carico canali...</span></div>
+  <div id="status" class="loading"><div class="dot"></div><span id="status-txt">Carico playlist...</span></div>
 </header>
 <div class="top-bar">
   <input id="search" type="text" placeholder="🔍  Cerca canale..." oninput="renderChannels()">
@@ -65,7 +64,7 @@
 </div>
 <div class="cat-filter" id="cat-filter"></div>
 <div id="err-banner"></div>
-<div id="tip">✅ Canali caricati — clicca per aprire lo stream nel tuo player</div>
+<div id="tip">✅ Playlist caricata — clicca un canale per aprire lo stream</div>
 <div class="content" id="content">
   <div class="ch-grid">
     <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
@@ -75,101 +74,30 @@
 </div>
 
 <script>
-// matthuisman usa jmp2.uk come proxy per i link Samsung — risolve token e CORS
-// https://github.com/matthuisman/samsung-tvplus-for-channels
-const JMP2 = "https://jmp2.uk/sam-";
-const DATA_URL = "https://i.mjh.nz/SamsungTVPlus/.channels.json.gz";
+// La playlist IT di BuddyChewChew è disponibile su GitHub raw (no CORS)
+// e contiene i link jmp2.uk/stvp-{ID} aggiornati ogni giorno
+const M3U_URL = "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/samsungtvplus_it.m3u";
 
-const CORS_PROXIES = [
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://proxy.cors.sh/${url}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
-];
-
-// Mapping nomi -> categoria IT
-const CAT_MAP = {
-  "Inazuma Eleven":"🧒 Kids / Anime","Inuyasha":"🧒 Kids / Anime","Teen Vee":"🧒 Kids / Anime",
-  "Yu-Gi-Oh!":"🧒 Kids / Anime","Car City Adventures":"🧒 Kids / Anime","Deaplaneta Kids":"🧒 Kids / Anime",
-  "Ducktv":"🧒 Kids / Anime","Masha E Orso":"🧒 Kids / Anime","Pocoyo":"🧒 Kids / Anime",
-  "Sonic The Hedgehog":"🧒 Kids / Anime","Super! Icarly":"🧒 Kids / Anime","Super! Pop":"🧒 Kids / Anime",
-  "Super! Spongebob":"🧒 Kids / Anime","Supertoons Tv":"🧒 Kids / Anime","Teletubbies":"🧒 Kids / Anime",
-  "Video Game Heroes":"🧒 Kids / Anime",
-  "Dfb Play Tv":"⚽ Sport","Fifa":"⚽ Sport","Inter 24/7":"⚽ Sport","Rbn":"⚽ Sport",
-  "Solocalcio":"⚽ Sport","Sportitalia":"⚽ Sport","Top Barça":"⚽ Sport","Adventure Sports":"⚽ Sport",
-  "Automoto":"⚽ Sport","Golf Television":"⚽ Sport","Italian Fishing Tv":"⚽ Sport","Motor1":"⚽ Sport",
-  "Motoretrò":"⚽ Sport","Move - Sportivi":"⚽ Sport","Rally.Tv Fast":"⚽ Sport","Red Bull Tv":"⚽ Sport",
-  "Salto Ostacoli":"⚽ Sport","Supertennis":"⚽ Sport","Tennis":"⚽ Sport","The Boat Show":"⚽ Sport",
-  "Top Gear":"⚽ Sport","Turbo":"⚽ Sport","World Poker Tour":"⚽ Sport",
-  "Dateline 24/7":"🔪 Crime","Forensic Files":"🔪 Crime","Giallo":"🔪 Crime","Guardia Costiera":"🔪 Crime",
-  "Serie Crime":"🔪 Crime","Squadra Speciale Lipsia":"🔪 Crime","Squadra Speciale Cobra 11":"🔪 Crime",
-  "Storie Criminali":"🔪 Crime","True Crime":"🔪 Crime",
-  "A Tavola":"🍕 Food & Lifestyle","Brindiamo!":"🍕 Food & Lifestyle","Foodnetwork":"🍕 Food & Lifestyle",
-  "Gambero Rosso":"🍕 Food & Lifestyle","Hell's Kitchen":"🍕 Food & Lifestyle","Hgtv":"🍕 Food & Lifestyle",
-  "Per Caso Tv":"🍕 Food & Lifestyle","Sportoutdoor.Tv":"🍕 Food & Lifestyle","Viaggi & Sapori":"🍕 Food & Lifestyle",
-  "5-Minuti Creativi":"🍕 Food & Lifestyle","Beauty Channel":"🍕 Food & Lifestyle","Catfish":"🍕 Food & Lifestyle",
-  "Class Tv Moda":"🍕 Food & Lifestyle","Dmax":"🍕 Food & Lifestyle","Failarmy":"🍕 Food & Lifestyle",
-  "Fireplace Vibes":"🍕 Food & Lifestyle","Just For Laughs":"🍕 Food & Lifestyle","Mudù - Risate Al Sud":"🍕 Food & Lifestyle",
-  "Nove":"🍕 Food & Lifestyle","People Are Awesome":"🍕 Food & Lifestyle","Pluto Tv Real Life":"🍕 Food & Lifestyle",
-  "Real Time":"🍕 Food & Lifestyle","The Pet Collective":"🍕 Food & Lifestyle",
-  "Bbc Earth":"🌿 Natura & Doc","Discovery":"🌿 Natura & Doc","Ii Guerra Mondiale":"🌿 Natura & Doc",
-  "Love The Planet":"🌿 Natura & Doc","Naturetime":"🌿 Natura & Doc","Waterbear":"🌿 Natura & Doc",
-  "Wedotv Big Stories":"🌿 Natura & Doc","Wildearth":"🌿 Natura & Doc",
-  "70-80.It":"🎵 Musica","Cool Summer":"🎵 Musica","Deluxe Lounge":"🎵 Musica","Hip Hop Tv":"🎵 Musica",
-  "K-Pop By Cj Enm":"🎵 Musica","New Kpop":"🎵 Musica","Radio Italia Live":"🎵 Musica","Rock Tv":"🎵 Musica",
-  "Trace Latina":"🎵 Musica","Trace Urban":"🎵 Musica","Vevo '70S & '80S":"🎵 Musica",
-  "Vevo '90S & '00S":"🎵 Musica","Vevo Pop":"🎵 Musica",
-  "3Bmeteo":"📰 News","Al Jazeera":"📰 News","Bloomberg Tv":"📰 News","Class Cnbc":"📰 News",
-  "Cnbc":"📰 News","Cnn Headlines":"📰 News","Euronews In Italiano":"📰 News","France 24 Fast":"📰 News",
-  "Giornale Radio":"📰 News","Il Sole 24 Ore Tv":"📰 News","La 7":"📰 News","Nbc News Now":"📰 News",
-  "Rai News 24":"📰 News","Sky News International":"📰 News","Tv5 Monde Info":"📰 News","Urania News":"📰 News",
-  "Anche I Ricchi Piangono":"📺 Serie & Fiction","Andromeda":"📺 Serie & Fiction","Autostop Per Il Cielo":"📺 Serie & Fiction",
-  "Bbc Series":"📺 Serie & Fiction","Elisa Di Rivombrosa":"📺 Serie & Fiction","H2o & Friends":"📺 Serie & Fiction",
-  "K-Drama":"📺 Serie & Fiction","Martial Universe":"📺 Serie & Fiction","Mr Bean Animated":"📺 Serie & Fiction",
-  "Mutant X":"📺 Serie & Fiction","Piel Salvaje":"📺 Serie & Fiction","Pluto Tv Serie":"📺 Serie & Fiction",
-  "Relic Hunter":"📺 Serie & Fiction","Soap Latino":"📺 Serie & Fiction","Soap Turco":"📺 Serie & Fiction",
-  "Un Medico In Famiglia":"📺 Serie & Fiction",
+// Categorie Samsung TV Plus IT
+const CAT_KEYWORDS = {
+  "🧒 Kids / Anime": ["inazuma","inuyasha","teen vee","yu-gi-oh","car city","deaplaneta","ducktv","masha","pocoyo","sonic","icarly","super! pop","sponge","supertoon","teletubb","video game"],
+  "⚽ Sport": ["dfb","fifa","inter 24","rbn","solocalcio","sportitalia","barça","barca","adventure sport","automoto","golf telev","fishing","motor1","motoretr","move - sport","rally","red bull","salto ostac","supertennis","tennis","boat show","top gear","turbo","poker tour","sport"],
+  "🔪 Crime": ["dateline","forensic","giallo","guardia costiera","serie crime","squadra spec","storie crim","true crime","crime time"],
+  "🍕 Food & Lifestyle": ["tavola","brindiamo","foodnet","gambero rosso","hell's kitchen","hgtv","per caso","sportoutdoor","viaggi","5-minuti","beauty channel","catfish","class tv moda","dmax","failarmy","fireplace","just for laugh","mudù","nove","people are","real life","real time","pet collective"],
+  "🌿 Natura & Doc": ["bbc earth","discovery","guerra mondiale","love the planet","naturetime","waterbear","wedotv","wildearth"],
+  "🎬 Cinema": ["action movie","adrenaline","alberto sordi","alta tensione","bizzarro","brividy","cg cine","cg grandi","cine amore","cine paura","cine thriller","cinema italiano","cinemadame","cinemalizia","cinewestern","commedia","dramma","duri a morire","family","fantascienza","film al femm","film asiat","film d'az","film top","immortali","grandi nomi","grjngo","pluto tv film","romance","romantica","smile","supercinema","trailers","velvet","western time"],
+  "🎵 Musica": ["70-80","cool summer","deluxe lounge","hip hop","k-pop","kpop","radio italia","rock tv","trace latina","trace urban","vevo"],
+  "📰 News": ["3bmeteo","al jazeera","bloomberg","class cnbc","cnbc","cnn","euronews","france 24","giornale radio","sole 24","la 7","nbc news","rai news","sky news","tv5 monde","urania news"],
+  "📺 Serie & Fiction": ["anche i ricchi","andromeda","autostop","bbc series","elisa di","h2o","k-drama","martial","mr bean","mutant x","piel salvaje","pluto tv serie","relic hunter","soap latino","soap turco","medico in fam"],
 };
 
-// Ordine numerico IT
-const NUM_MAP = {
-  "Inazuma Eleven":1,"Inuyasha":2,"Teen Vee":3,"Yu-Gi-Oh!":4,"Car City Adventures":5,
-  "Deaplaneta Kids":6,"Ducktv":7,"Masha E Orso":8,"Pocoyo":9,"Sonic The Hedgehog":10,
-  "Super! Icarly":11,"Super! Pop":12,"Super! Spongebob":13,"Supertoons Tv":14,"Teletubbies":15,
-  "Video Game Heroes":16,"Dfb Play Tv":17,"Fifa":18,"Inter 24/7":19,"Rbn":20,
-  "Solocalcio":21,"Sportitalia":22,"Top Barça":23,"Dateline 24/7":24,"Forensic Files":25,
-  "Giallo":26,"Guardia Costiera":27,"Serie Crime":28,"Squadra Speciale Lipsia":29,"Squadra Speciale Cobra 11":30,
-  "Storie Criminali":31,"True Crime":32,"A Tavola":33,"Brindiamo!":34,"Foodnetwork":35,
-  "Gambero Rosso":36,"Hell's Kitchen":37,"Hgtv":38,"Per Caso Tv":39,"Sportoutdoor.Tv":40,
-  "Viaggi & Sapori":41,"Bbc Earth":42,"Discovery":43,"Ii Guerra Mondiale":44,"Love The Planet":45,
-  "Naturetime":46,"Waterbear":47,"Wedotv Big Stories":48,"Wildearth":49,"Action Movie":50,
-  "Adrenaline Movies":51,"Alberto Sordi & Co":52,"Alta Tensione":53,"Bizzarro Movies":54,
-  "Brividy Cinema":55,"Cg Cine Mania":56,"Cg Grandi Film":57,"Cine Amore":58,"Cine Paura":59,
-  "Cine Thriller":60,"Cinema Italiano":61,"Cinemadame":62,"Cinemalizia":63,"Cinewestern":64,
-  "Commedia - Rakuten":65,"Crime Time":66,"Dramma - Rakuten":67,"Duri A Morire":68,
-  "Family - Rakuten":69,"Fantascienza - Rakuten":70,"Film Al Femminile":71,"Film Asiatici - Rakuten":72,
-  "Film D'azione - Rakuten":73,"Film Top - Rakuten":74,"Gli Immortali":75,"Grandi Nomi":76,
-  "Grjngo - Film Western":77,"Pluto Tv Film":78,"Pluto Tv Film Azione":79,"Pluto Tv Film Commedia":80,
-  "Pluto Tv Film Romantico":81,"Romance - Rakuten":82,"Romantica":83,"Smile":84,"Supercinema":85,
-  "Trailers":86,"Velvet":87,"Western Time":88,"5-Minuti Creativi":89,"Beauty Channel":90,
-  "Catfish":91,"Class Tv Moda":92,"Dmax":93,"Failarmy":94,"Fireplace Vibes":95,
-  "Just For Laughs":96,"Mudù - Risate Al Sud":97,"Nove":98,"People Are Awesome":99,
-  "Pluto Tv Real Life":100,"Real Time":101,"The Pet Collective":102,"70-80.It":103,
-  "Cool Summer":104,"Deluxe Lounge":105,"Hip Hop Tv":106,"K-Pop By Cj Enm":107,"New Kpop":108,
-  "Radio Italia Live":109,"Rock Tv":110,"Trace Latina":111,"Trace Urban":112,
-  "Vevo '70S & '80S":113,"Vevo '90S & '00S":114,"Vevo Pop":115,"3Bmeteo":116,
-  "Al Jazeera":117,"Bloomberg Tv":118,"Class Cnbc":119,"Cnbc":120,"Cnn Headlines":121,
-  "Euronews In Italiano":122,"France 24 Fast":123,"Giornale Radio":124,"Il Sole 24 Ore Tv":125,
-  "La 7":126,"Nbc News Now":127,"Rai News 24":128,"Sky News International":129,
-  "Tv5 Monde Info":130,"Urania News":131,"Anche I Ricchi Piangono":132,"Andromeda":133,
-  "Autostop Per Il Cielo":134,"Bbc Series":135,"Elisa Di Rivombrosa":136,"H2o & Friends":137,
-  "K-Drama":138,"Martial Universe":139,"Mr Bean Animated":140,"Mutant X":141,"Piel Salvaje":142,
-  "Pluto Tv Serie":143,"Relic Hunter":144,"Soap Latino":145,"Soap Turco":146,
-  "Un Medico In Famiglia":147,"Adventure Sports":148,"Automoto":149,"Golf Television":150,
-  "Italian Fishing Tv":151,"Motor1":152,"Motoretrò":153,"Move - Sportivi":154,
-  "Rally.Tv Fast":155,"Red Bull Tv":156,"Salto Ostacoli":157,"Supertennis":158,
-  "Tennis":159,"The Boat Show":160,"Top Gear":161,"Turbo":162,"World Poker Tour":163,
-};
+function getCategory(name) {
+  const n = name.toLowerCase();
+  for (const [cat, keywords] of Object.entries(CAT_KEYWORDS)) {
+    if (keywords.some(k => n.includes(k))) return cat;
+  }
+  return "🎬 Cinema";
+}
 
 let channelsData = [];
 let activeCat = "Tutti";
@@ -185,108 +113,58 @@ function showErr(msg) {
   else b.classList.remove("show");
 }
 
-function fetchWithTimeout(url, ms=8000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, {signal: ctrl.signal}).finally(() => clearTimeout(t));
+function parseM3U(text) {
+  const lines = text.split('\n');
+  const channels = [];
+  let current = null;
+  for (const line of lines) {
+    const l = line.trim();
+    if (l.startsWith('#EXTINF')) {
+      current = {};
+      // Estrai attributi
+      const nameMatch = l.match(/,(.+)$/);
+      if (nameMatch) current.name = nameMatch[1].trim();
+      const logoMatch = l.match(/tvg-logo="([^"]+)"/);
+      if (logoMatch) current.logo = logoMatch[1];
+      const numMatch = l.match(/tvg-chno="([^"]+)"/);
+      if (numMatch) current.num = parseInt(numMatch[1]) || 9999;
+      const idMatch = l.match(/tvg-id="([^"]+)"/);
+      if (idMatch) current.id = idMatch[1];
+      const groupMatch = l.match(/group-title="([^"]+)"/);
+      if (groupMatch) current.group = groupMatch[1];
+    } else if (l.startsWith('http') && current) {
+      current.url = l;
+      current.cat = getCategory(current.name || '');
+      channels.push(current);
+      current = null;
+    }
+  }
+  return channels;
 }
 
 async function loadChannels() {
   document.getElementById("refresh-btn").disabled = true;
-  setStatus("loading", "Carico canali...");
+  setStatus("loading", "Carico playlist...");
   showErr(null);
   document.getElementById("tip").classList.remove("show");
 
   try {
-    // Prova diretto poi proxy
-    let data = null;
-    try {
-      const res = await fetchWithTimeout(DATA_URL, 5000);
-      if (res.ok) {
-        const buf = await res.arrayBuffer();
-        const ds = new DecompressionStream('gzip');
-        const writer = ds.writable.getWriter();
-        writer.write(new Uint8Array(buf));
-        writer.close();
-        const reader = ds.readable.getReader();
-        const chunks = [];
-        while (true) {
-          const {done, value} = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-        const text = new TextDecoder().decode(
-          chunks.reduce((a,b) => { const c=new Uint8Array(a.length+b.length); c.set(a); c.set(b,a.length); return c; }, new Uint8Array(0))
-        );
-        data = JSON.parse(text);
-      }
-    } catch(_) {}
+    const res = await fetch(M3U_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    channelsData = parseM3U(text);
 
-    // Se il gz non funziona, prova la versione non compressa via proxy
-    if (!data) {
-      const plainUrl = "https://i.mjh.nz/SamsungTVPlus/app-it.json";
-      data = await Promise.any(
-        CORS_PROXIES.map(proxy => proxy(plainUrl)).map(async url => {
-          const res = await fetchWithTimeout(url, 10000);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const d = await res.json();
-          if (!d) throw new Error("vuoto");
-          return d;
-        })
-      );
-    }
-
-    // Parsing dati
-    // Struttura .channels.json.gz: { channels: { "IT": { id: { name, slug, logo, ... } } } }
-    // Struttura app-it.json: { channels: { id: { name, url, logo } } }
-    let rawChannels = {};
-    if (data.channels) {
-      if (data.channels.it || data.channels.IT) {
-        rawChannels = data.channels.it || data.channels.IT;
-      } else {
-        // Controlla se sono già canali diretti
-        const firstVal = Object.values(data.channels)[0];
-        if (firstVal && (firstVal.name || firstVal.slug)) {
-          rawChannels = data.channels;
-        }
-      }
-    }
-    if (Object.keys(rawChannels).length === 0) rawChannels = data;
-
-    channelsData = [];
-    for (const [id, ch] of Object.entries(rawChannels)) {
-      const name = ch.name || id;
-      // jmp2.uk/sam-{slug} è il link che usa matthuisman
-      const slug = ch.slug || id;
-      const url = ch.url || ch.stream_url || `${JMP2}${slug}`;
-      const logo = ch.logo || ch.thumbnail || "";
-      // Cerca categoria e numero dalla nostra mappa
-      let cat = "🎬 Cinema"; // default
-      let num = 200;
-      for (const [n, c] of Object.entries(CAT_MAP)) {
-        if (name.toLowerCase().includes(n.toLowerCase()) || n.toLowerCase().includes(name.toLowerCase())) {
-          cat = c; break;
-        }
-      }
-      for (const [n, nu] of Object.entries(NUM_MAP)) {
-        if (name.toLowerCase().includes(n.toLowerCase()) || n.toLowerCase().includes(name.toLowerCase())) {
-          num = nu; break;
-        }
-      }
-      channelsData.push({ id, name, url, logo, cat, num, slug });
-    }
-    channelsData.sort((a,b) => a.num - b.num);
+    // Filtra solo canali IT (tutti quelli nella playlist IT sono già italiani)
+    channelsData.sort((a, b) => (a.num || 9999) - (b.num || 9999));
 
     document.getElementById("ch-count").textContent = `${channelsData.length} canali IT`;
-    setStatus("ok", "Canali caricati ✓");
+    setStatus("ok", "Playlist caricata ✓");
     document.getElementById("tip").classList.add("show");
     renderCatFilter();
     renderChannels();
-
   } catch(e) {
-    setStatus("err", "Errore caricamento");
-    showErr("Impossibile caricare i dati dall'API Samsung. Verifica la connessione e riprova. (" + e.message + ")");
-    document.getElementById("ch-count").textContent = "— canali";
+    setStatus("err", "Errore");
+    showErr("Impossibile caricare la playlist: " + e.message + " — Riprova tra qualche minuto.");
     document.getElementById("content").innerHTML = "";
   }
 
@@ -297,7 +175,9 @@ function renderCatFilter() {
   const el = document.getElementById("cat-filter");
   el.innerHTML = "";
   const cats = ["Tutti", ...new Set(channelsData.map(c => c.cat))];
-  cats.forEach(cat => {
+  const catOrder = ["Tutti","🧒 Kids / Anime","⚽ Sport","🔪 Crime","🍕 Food & Lifestyle","🌿 Natura & Doc","🎬 Cinema","🎵 Musica","📰 News","📺 Serie & Fiction"];
+  const sorted = [...new Set([...catOrder, ...cats])].filter(c => c === "Tutti" || cats.includes(c));
+  sorted.forEach(cat => {
     const btn = document.createElement("button");
     btn.className = "cat-btn" + (cat === activeCat ? " active" : "");
     btn.textContent = cat;
@@ -309,7 +189,7 @@ function renderCatFilter() {
 function renderChannels() {
   const q = document.getElementById("search").value.toLowerCase();
   const filtered = channelsData.filter(c => {
-    const ms = !q || c.name.toLowerCase().includes(q) || String(c.num).includes(q);
+    const ms = !q || (c.name||'').toLowerCase().includes(q) || String(c.num).includes(q);
     const mc = activeCat === "Tutti" || c.cat === activeCat;
     return ms && mc;
   });
@@ -337,35 +217,30 @@ function renderChannels() {
     if (!groups[cat]) continue;
     const sec = document.createElement("div");
     sec.className = "category-section";
-
     const title = document.createElement("div");
     title.className = "category-title";
     title.textContent = cat;
     sec.appendChild(title);
-
     const grid = document.createElement("div");
     grid.className = "ch-grid";
-
     for (const ch of groups[cat]) {
       const a = document.createElement("a");
       a.className = "ch-card";
       a.href = "#";
-      const initials = ch.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
-      const hasUrl = !!ch.url;
+      const initials = (ch.name||'??').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      const num = ch.num && ch.num < 9000 ? ch.num : '—';
       a.innerHTML = `
         ${ch.logo
           ? `<img class="ch-logo" src="${ch.logo}" alt="" onerror="this.outerHTML='<div class=ch-logo-ph>${initials}</div>'">`
           : `<div class="ch-logo-ph">${initials}</div>`}
         <span class="ch-info">
-          <span class="ch-num">${ch.num < 200 ? ch.num : '—'}</span>
-          <span class="ch-name">${ch.name}</span>
+          <span class="ch-num">${num}</span>
+          <span class="ch-name">${ch.name||''}</span>
         </span>
-        <span class="ch-badge${hasUrl ? '' : ' nd'}">${hasUrl ? 'HLS' : 'N/D'}</span>`;
-
+        <span class="ch-badge">HLS</span>`;
       a.addEventListener("click", e => {
         e.preventDefault();
         if (ch.url) window.open(ch.url, "_blank", "noopener");
-        else alert(`⚠️ Link non disponibile per "${ch.name}". Ricarica per riprovare.`);
       });
       grid.appendChild(a);
     }
@@ -374,10 +249,10 @@ function renderChannels() {
   }
 }
 
-// Avvio
 loadChannels();
-// Rinnovo ogni 30 min
-setInterval(loadChannels, 30 * 60 * 1000);
+// Rinnova ogni 6 ore (la playlist GitHub si aggiorna ogni giorno)
+setInterval(loadChannels, 6 * 60 * 60 * 1000);
 </script>
 </body>
 </html>
+
